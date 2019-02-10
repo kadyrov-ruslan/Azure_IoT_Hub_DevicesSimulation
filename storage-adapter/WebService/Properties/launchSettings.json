@@ -1,0 +1,21 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:9022/",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "WebService": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:9022/v1/status",
+      "environmentVariables": {
+        "PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING": "AccountEndpoint=https://iotddosml.documents.azure.com:443/;AccountKey=StvZpGR7bQYQ1jTukpbXcEpus5vc0pPpVDLSjbnq2nvyzx6ivvr32jijNUeYLgTjywgqT5MXIVXUQz6FbkoAOw==;"
+      },
+      "applicationUrl": "http://localhost:9022/v1/status"
+    }
+  }
+}
