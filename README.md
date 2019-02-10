@@ -1,1 +1,1 @@
-# Azure_IoT_Hub_DevicesSimulation
+# Azure IoT Hub devices custom simulation. All rights reserved by Microsoft.
