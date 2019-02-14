@@ -77,7 +77,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.WebService
             this.ApplicationContainer = DependencyResolution.Init(services);
 
             // Print some useful information at bootstrap time
-            this.PrintBootstrapInfo(this.ApplicationContainer);
+            //this.PrintBootstrapInfo(this.ApplicationContainer);
 
             // Create the IServiceProvider based on the container
             return new AutofacServiceProvider(this.ApplicationContainer);
@@ -137,9 +137,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.WebService
             // This creates sample simulations that will be shown on simulation dashboard by default
             this.simulationService = this.ApplicationContainer.Resolve<ISimulations>();
             if (!config.ServicesConfig.DisableSeedByTemplate)
-            {
                 this.simulationService.TrySeedAsync();
-            }
 
             this.threadsMonitoringTask = this.MonitorThreadsAsync(appLifetime);
         }

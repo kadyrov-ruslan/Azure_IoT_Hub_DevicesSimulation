@@ -7,7 +7,7 @@
         "PCS_RESOURCE_GROUP_LOCATION": "IoT_DDOS_ML",
         "PCS_SUBSCRIPTION_ID": "",
         "PCS_RESOURCE_GROUP": "",
-        "PCS_IOHUB_NAME": "",
+        "PCS_IOHUB_NAME": "IoT-DDOS-ML-Hub.azure-devices.net",
         "PCS_STORAGEADAPTER_WEBSERVICE_URL": "http://localhost:9022/v1",
         "PCS_IOTHUB_CONNSTRING": "HostName=IoT-DDOS-ML-Hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=REFVwbv4CDefTUg4DHCSmTTKyOWk5sElP3qDb6QLmrI=",
         "PCS_VMSS_NAME": "your vm scale set name",

@@ -119,7 +119,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
         }
 
         /// <summary>
-        /// Get list of simulations.
+        ///     Get list of simulations.
         /// </summary>
         public async Task<IList<Models.Simulation>> GetListAsync()
         {
@@ -138,22 +138,19 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
         }
 
         /// <summary>
-        /// Get list of simulations with statistics.
+        ///     Get list of simulations with statistics.
         /// </summary>
         public async Task<IList<Models.Simulation>> GetListWithStatisticsAsync()
         {
             var items = await this.GetListAsync();
 
-            foreach (var item in items)
-            {
-                item.Statistics = await this.simulationStatistics.GetSimulationStatisticsAsync(item.Id);
-            }
+            foreach (var item in items) item.Statistics = await this.simulationStatistics.GetSimulationStatisticsAsync(item.Id);
 
             return items;
         }
 
         /// <summary>
-        /// Get a simulation.
+        ///     Get a simulation.
         /// </summary>
         public async Task<Models.Simulation> GetAsync(string id)
         {
@@ -177,7 +174,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
         }
 
         /// <summary>
-        /// Create a simulation.
+        ///     Create a simulation.
         /// </summary>
         public async Task<Models.Simulation> InsertAsync(Models.Simulation simulation, string template = "")
         {
@@ -206,13 +203,11 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
                 var types = await this.deviceModels.GetListAsync();
                 simulation.DeviceModels = new List<Models.Simulation.DeviceModelRef>();
                 foreach (var type in types)
-                {
                     simulation.DeviceModels.Add(new Models.Simulation.DeviceModelRef
                     {
                         Id = type.Id,
                         Count = DEVICES_PER_MODEL_IN_DEFAULT_TEMPLATE
                     });
-                }
 
                 simulation.IotHubConnectionStrings = new List<string> { ServicesConfig.USE_DEFAULT_IOTHUB };
             }
@@ -221,10 +216,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             {
                 var connString = await this.connectionStrings.SaveAsync(simulation.IotHubConnectionStrings[index], true);
 
-                if (!simulation.IotHubConnectionStrings.Contains(connString))
-                {
-                    simulation.IotHubConnectionStrings[index] = connString;
-                }
+                if (!simulation.IotHubConnectionStrings.Contains(connString)) simulation.IotHubConnectionStrings[index] = connString;
             }
 
             // This value cannot be set by the user, we set it here and make sure it's "false"
@@ -234,15 +226,13 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
         }
 
         /// <summary>
-        /// Create or Replace a simulation.
-        /// The logic works under the assumption that there is only one simulation with id "1".
+        ///     Create or Replace a simulation.
+        ///     The logic works under the assumption that there is only one simulation with id "1".
         /// </summary>
         public async Task<Models.Simulation> UpsertAsync(Models.Simulation simulation, bool validateHubCredentials)
         {
             if (string.IsNullOrEmpty(simulation.Id))
-            {
                 throw new InvalidInputException("Simulation ID is not specified.");
-            }
 
             Models.Simulation existingSimulation = null;
 
@@ -274,7 +264,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
                 {
                     this.log.Error("Invalid simulation ETag",
                         () => new { simulation.Id, ETagInStorage = existingSimulation.ETag, ETagInRequest = simulation.ETag });
-                    this.diagnosticsLogger.LogServiceError($"Invalid simulation ETag", new { simulation.Id, simulation.Name });
+                    this.diagnosticsLogger.LogServiceError("Invalid simulation ETag", new { simulation.Id, simulation.Name });
                     throw new ResourceOutOfDateException($"Invalid ETag. The simulation ETag is '{existingSimulation.ETag}'");
                 }
 
@@ -298,10 +288,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             {
                 var connString = await this.connectionStrings.SaveAsync(simulation.IotHubConnectionStrings[index], validateHubCredentials);
 
-                if (!simulation.IotHubConnectionStrings.Contains(connString))
-                {
-                    simulation.IotHubConnectionStrings[index] = connString;
-                }
+                if (!simulation.IotHubConnectionStrings.Contains(connString)) simulation.IotHubConnectionStrings[index] = connString;
             }
 
             // Note: this code is also in MergeAsync
@@ -324,7 +311,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
         }
 
         /// <summary>
-        /// Modify some simulation details
+        ///     Modify some simulation details
         /// </summary>
         public async Task<Models.Simulation> MergeAsync(SimulationPatch patch)
         {
@@ -375,10 +362,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             // modify other fields, so we need to check for null
             if (patch.Enabled != null) simulation.Enabled = patch.Enabled.Value;
 
-            if (patch.DeleteDevicesOnce.HasValue)
-            {
-                simulation.DeleteDevicesOnce = patch.DeleteDevicesOnce.Value;
-            }
+            if (patch.DeleteDevicesOnce.HasValue) simulation.DeleteDevicesOnce = patch.DeleteDevicesOnce.Value;
 
             // TODO: can we use this.SaveAsync() here too and avoid the duplication?
             var record = this.simulationsStorage.BuildRecord(simulation.Id, JsonConvert.SerializeObject(simulation));
@@ -390,7 +374,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
         }
 
         /// <summary>
-        /// Delete a simulation and its statistics (not the devices).
+        ///     Delete a simulation and its statistics (not the devices).
         /// </summary>
         public async Task DeleteAsync(string id)
         {
@@ -433,10 +417,9 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
 
             // Edit the record only if required
             if (!simulation.DevicesCreationStarted)
-            {
                 try
                 {
-                    Dictionary<string, List<string>> deviceList = this.GetDeviceIdsByModel(simulation);
+                    var deviceList = this.GetDeviceIdsByModel(simulation);
                     var deviceIds = deviceList.SelectMany(x => x.Value);
                     this.log.Info("Creating devices...", () => new { simulationId });
 
@@ -452,22 +435,19 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
                     this.log.Error("Failed to create bulk-device-creation job", e);
                     return false;
                 }
-            }
 
             return true;
         }
 
         /// <summary>
-        /// Try to create a job to delete all the devices in a simulation.
-        /// Throw exception in case of errors.
-        ///
-        /// This operation is not meant to modify the simulation object, so if the simulation
-        /// is still running it will cause errors due to the missing devices. The simulation
-        /// might as well recreate the devices if it is running, that is not a problem.
-        ///
-        /// This method is invoked by the web service, exceptions are thrown to tell the user
-        /// what happened. At this point the UI doesn't consume this logic, which is used only
-        /// for maintenance.
+        ///     Try to create a job to delete all the devices in a simulation.
+        ///     Throw exception in case of errors.
+        ///     This operation is not meant to modify the simulation object, so if the simulation
+        ///     is still running it will cause errors due to the missing devices. The simulation
+        ///     might as well recreate the devices if it is running, that is not a problem.
+        ///     This method is invoked by the web service, exceptions are thrown to tell the user
+        ///     what happened. At this point the UI doesn't consume this logic, which is used only
+        ///     for maintenance.
         /// </summary>
         public async Task<(bool jobCreated, string jobId)> DeleteAllDevicesAsync(string simulationId, IDevices devices)
         {
@@ -484,9 +464,9 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
         }
 
         /// <summary>
-        /// Try to create a job to delete all the devices in a simulation.
-        /// This method is used by the simulation agent when a simulation ends.
-        /// In case of errors the method returns 'false' and the caller is expected to retry.
+        ///     Try to create a job to delete all the devices in a simulation.
+        ///     This method is used by the simulation agent when a simulation ends.
+        ///     In case of errors the method returns 'false' and the caller is expected to retry.
         /// </summary>
         public async Task<bool> TryToStartDevicesDeletionAsync(string simulationId, IDevices devices)
         {
@@ -550,7 +530,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
         }
 
         /// <summary>
-        /// Get the ID of the devices in a simulation.
+        ///     Get the ID of the devices in a simulation.
         /// </summary>
         public IEnumerable<string> GetDeviceIds(Models.Simulation simulation)
         {
@@ -559,12 +539,8 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             // Calculate the device IDs used in the simulation
             var models = (from model in simulation.DeviceModels where model.Count > 0 select model).ToList();
             foreach (var model in models)
-            {
                 for (var i = 0; i < model.Count; i++)
-                {
                     deviceIds.Add(this.GenerateId(simulation.Id, model.Id, i));
-                }
-            }
 
             return deviceIds;
         }
@@ -575,7 +551,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             var deviceCount = 0;
 
             // Load the simulation models with at least 1 device to simulate (ignoring the custom device ID for now)
-            List<Models.Simulation.DeviceModelRef> models = (from model in simulation.DeviceModels where model.Count > 0 select model).ToList();
+            var models = (from model in simulation.DeviceModels where model.Count > 0 select model).ToList();
 
             // Generate ID, e.g. "1.chiller-01.1", "1.chiller-01.2", etc
             foreach (var model in models)
@@ -593,10 +569,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             // Add custom device IDs
             foreach (var device in simulation.CustomDevices)
             {
-                if (!result.ContainsKey(device.DeviceModel.Id))
-                {
-                    result.Add(device.DeviceModel.Id, new List<string>());
-                }
+                if (!result.ContainsKey(device.DeviceModel.Id)) result.Add(device.DeviceModel.Id, new List<string>());
 
                 result[device.DeviceModel.Id].Add(device.DeviceId);
                 deviceCount++;
@@ -608,8 +581,8 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
         }
 
         /// <summary>
-        /// Generate a device Id. The method is here to avoid the need to call Dispose
-        /// on the registry used by the Devices class.
+        ///     Generate a device Id. The method is here to avoid the need to call Dispose
+        ///     on the registry used by the Devices class.
         /// </summary>
         public string GenerateId(string simulationId, string deviceModelId, int position)
         {
@@ -624,14 +597,14 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             // If deletion already happened there's nothing to do, return an empty Job ID
             if (simulation.DevicesDeletionStarted || simulation.DevicesDeletionComplete)
             {
-                this.log.Info("Bulk device deletion not needed, devices have already been deleted", () => new { simulation.Id });
+                //this.log.Info("Bulk device deletion not needed, devices have already been deleted", () => new { simulation.Id });
                 return (simulation, false, null);
             }
 
-            Dictionary<string, List<string>> deviceList = this.GetDeviceIdsByModel(simulation);
+            var deviceList = this.GetDeviceIdsByModel(simulation);
             var deviceIds = deviceList.SelectMany(x => x.Value).ToList();
 
-            string jobId = await devices.DeleteListUsingJobsAsync(deviceIds);
+            var jobId = await devices.DeleteListUsingJobsAsync(deviceIds);
             this.log.Info("Bulk device deletion started", () => new { simulation.Id, jobId, deviceIds.Count });
 
             return (simulation, true, jobId);
@@ -657,13 +630,10 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             simulation.Modified = DateTimeOffset.UtcNow;
 
             // When a simulation is disabled, its partitions are deleted - this triggers the deletion
-            if (!simulation.Enabled)
-            {
-                simulation.PartitioningComplete = false;
-            }
+            if (!simulation.Enabled) simulation.PartitioningComplete = false;
 
-            IDataRecord record = this.simulationsStorage.BuildRecord(simulation.Id, JsonConvert.SerializeObject(simulation));
-            IDataRecord result = await this.simulationsStorage.UpsertAsync(record, eTag);
+            var record = this.simulationsStorage.BuildRecord(simulation.Id, JsonConvert.SerializeObject(simulation));
+            var result = await this.simulationsStorage.UpsertAsync(record, eTag);
 
             // Use the new ETag provided by the storage
             simulation.ETag = result.GetETag();
@@ -692,7 +662,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             }
             else
             {
-                this.log.Debug("Template not found for setting sample simulations.");
+                //this.log.Debug("Template not found for setting sample simulations.");
                 return;
             }
 
@@ -703,7 +673,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
                 var simulationList = JsonConvert.DeserializeObject<List<Models.Simulation>>(content);
                 if (simulationList == null || simulationList.Count == 0) return;
 
-                for (int index = 0; index < simulationList.Count; index++)
+                for (var index = 0; index < simulationList.Count; index++)
                 {
                     // We need to start creating simulations starting with id 1 as it is treated as default simulation
                     // and is referenced in Welcome page on UI
@@ -741,7 +711,6 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
 
             // Delete statistics records on simulation start
             await this.simulationStatistics.DeleteSimulationStatisticsAsync(simulation.Id);
-
             return simulation;
         }
 
@@ -750,7 +719,6 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
             try
             {
                 var currentStats = await this.simulationStatistics.GetSimulationStatisticsAsync(simulation.Id);
-
                 if (currentStats != null)
                 {
                     var simulationModel = new SimulationStatisticsModel
@@ -759,7 +727,7 @@ namespace Microsoft.Azure.IoTSolutions.DeviceSimulation.Services
                         TotalMessagesSent = currentStats.TotalMessagesSent,
                         FailedMessages = currentStats.FailedMessages,
                         FailedDeviceConnections = currentStats.FailedDeviceConnections,
-                        FailedDevicePropertiesUpdates = currentStats.FailedDevicePropertiesUpdates,
+                        FailedDevicePropertiesUpdates = currentStats.FailedDevicePropertiesUpdates
                     };
 
                     await this.simulationStatistics.UpdateAsync(simulation.Id, simulationModel);
