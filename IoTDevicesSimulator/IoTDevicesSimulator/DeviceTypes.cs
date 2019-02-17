@@ -3,7 +3,7 @@
     public enum DeviceType
     {
         SimpleHome,
-        Chiller,
+        Fridge,
         WashingMachine
     }
 }

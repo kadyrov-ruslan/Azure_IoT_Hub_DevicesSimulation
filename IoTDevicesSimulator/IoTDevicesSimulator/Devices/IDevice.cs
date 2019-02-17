@@ -4,13 +4,13 @@ namespace IoTDevicesSimulator.Devices
 {
     public interface IDevice
     {
-        string DeviceId { get; set; }
+        string ConnectionString { get; set; }
 
         DeviceType Type { get; set; }
 
         string DeviceName { get; set; }
 
-        ulong DeviceSendUnixTime { get; set; }
+        long DeviceSendUnixTime { get; set; }
 
         int DelayInSec { get; set; }
 

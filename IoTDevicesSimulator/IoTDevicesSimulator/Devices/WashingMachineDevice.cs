@@ -7,11 +7,10 @@ using Newtonsoft.Json.Converters;
 
 namespace IoTDevicesSimulator.Devices
 {
-    /// <summary>
-    /// Model of simple IoT device, that sends temperature & humidity telemetry
-    /// </summary>
-    public class SimpleHomeDevice : IDevice
+    public class WashingMachineDevice : IDevice
     {
+        public string DeviceId { get; set; }
+
         [JsonIgnore]
         public string ConnectionString { get; set; }
 

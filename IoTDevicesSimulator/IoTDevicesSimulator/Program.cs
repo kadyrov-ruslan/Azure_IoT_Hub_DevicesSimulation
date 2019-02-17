@@ -7,14 +7,13 @@ namespace IoTDevicesSimulator
 {
     public class Program
     {
-        private const string ConnectionString = "{Your device connection string here}";
-
         private static DeviceClient _deviceClient;
 
         private static int _telemetryInterval = 1; // Seconds
 
         private static void Main(string[] args)
         {
+            args = new[] { "Fridge", "Http1" };
             var arg0Val = args[0];
             var deviceType = (DeviceType)Enum.Parse(typeof(DeviceType), arg0Val, true);
             var simulatingDevice = DeviceFactory.GetDevice(deviceType);
@@ -25,7 +24,7 @@ namespace IoTDevicesSimulator
 
             Console.WriteLine("IoT Hub Simulated device. Ctrl-C to exit.\n");
             // Connect to the IoT hub using the args protocol
-            _deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, protocol);
+            _deviceClient = DeviceClient.CreateFromConnectionString(simulatingDevice.ConnectionString, protocol);
 
             // Create a handler for the direct method call
             _deviceClient.SetMethodHandlerAsync("SetTelemetryInterval", SetTelemetryInterval, null).Wait();

@@ -17,18 +17,21 @@ namespace IoTDevicesSimulator
                 case DeviceType.SimpleHome:
                     device = new SimpleHomeDevice
                     {
-                        DeviceId = "id",
-                        DeviceName = "Simple home IoT device"
+                        DeviceName = "Simple home IoT device",
+                        ConnectionString = "HostName=IoT-DDOS-ML-Hub.azure-devices.net;DeviceId=SimpleHomeDevice;SharedAccessKey=OjMlZCdvC2piwWDL1/IMDYnQwh8L6ehTAQSPh+23esg=",
+                        DelayInSec = 5
                     };
                     break;
-                case DeviceType.Chiller:
-                    device = new SimpleHomeDevice
+                case DeviceType.Fridge:
+                    device = new FridgeDevice
                     {
-                        DeviceId = "id"
+                        DeviceName = "Fridge IoT device",
+                        ConnectionString = "HostName=IoT-DDOS-ML-Hub.azure-devices.net;DeviceId=SimpleHomeDevice;SharedAccessKey=OjMlZCdvC2piwWDL1/IMDYnQwh8L6ehTAQSPh+23esg=",
+                        DelayInSec = 10
                     };
                     break;
                 case DeviceType.WashingMachine:
-                    device = new SimpleHomeDevice
+                    device = new WashingMachineDevice
                     {
                         DeviceId = "id"
                     };
